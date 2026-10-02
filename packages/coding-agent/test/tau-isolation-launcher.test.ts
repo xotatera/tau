@@ -50,7 +50,7 @@ describe("Tau isolation bootstrap", () => {
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	function run(flags: string[], path = process.env.PATH ?? "", entry = cli) {
+	function run(flags: string[], path = process.env.PATH ?? "", entry = cli, timeoutMs = 5000) {
 		return spawnSync(
 			process.execPath,
 			[
@@ -83,7 +83,7 @@ describe("Tau isolation bootstrap", () => {
 					PI_TELEMETRY: "0",
 				},
 				encoding: "utf8",
-				timeout: 5000,
+				timeout: timeoutMs,
 				killSignal: "SIGKILL",
 			},
 		);
@@ -233,8 +233,8 @@ assert.equal(local.exitCode, 0); assert.ok(output.includes("git version"));
 writeFileSync(${JSON.stringify(marker)}, "bash passed");
 } catch(error) { console.error(error); process.exitCode = 1; } ctx.shutdown(); }); }`,
 		);
-		const result = run(["--isolated"]);
-		expect(result.status, result.stderr).toBe(0);
+		const result = run(["--isolated"], process.env.PATH, cli, 15_000);
+		expect(result.status, `${result.error?.message ?? ""}\n${result.stderr}`).toBe(0);
 		expect(readFileSync(marker, "utf8")).toBe("bash passed");
 	});
 

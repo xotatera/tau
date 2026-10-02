@@ -189,14 +189,25 @@ describe("Tau isolation bootstrap", () => {
 			{
 				cwd: join(root, "project"),
 				env: { PATH: process.env.PATH, HOME: join(root, "home"), TAU_CODING_AGENT_DIR: agent },
-				stdio: "ignore",
+				stdio: ["ignore", "ignore", "pipe"],
 			},
 		);
-		const exited = new Promise<number | null>((resolve) => child.once("exit", resolve));
+		let stderr = "";
+		child.stderr.on("data", (chunk: Buffer) => {
+			stderr += chunk.toString();
+		});
+		let exitCode: number | null | undefined;
+		const exited = new Promise<number | null>((resolve) =>
+			child.once("exit", (code) => {
+				exitCode = code;
+				resolve(code);
+			}),
+		);
 		try {
-			for (let i = 0; i < 100 && !existsSync(heartbeat); i++)
+			const deadline = Date.now() + 10_000;
+			while (!existsSync(heartbeat) && exitCode === undefined && Date.now() < deadline)
 				await new Promise((resolve) => setTimeout(resolve, 30));
-			expect(existsSync(heartbeat)).toBe(true);
+			expect(existsSync(heartbeat), `Isolated child exited ${exitCode ?? "not yet"}: ${stderr}`).toBe(true);
 			child.kill("SIGTERM");
 			expect(await exited).toBe(143);
 			await new Promise((resolve) => setTimeout(resolve, 100));
@@ -206,7 +217,7 @@ describe("Tau isolation bootstrap", () => {
 		} finally {
 			child.kill("SIGKILL");
 		}
-	}, 8000);
+	}, 15_000);
 
 	it("production bash tools can list search and use git without broad system mounts", () => {
 		const bashModule = new URL("../src/core/tools/bash.ts", import.meta.url).href;

@@ -1,4 +1,10 @@
-# Tau
+# τ Tau
+
+## DISCLAIMER
+
+**τ (Tau) is a personal, unofficial fork of Pi.** The Pi author's first-person statements in the PI-NATIVE section below are theirs, not the Tau maintainer's. Pi's π logo, npm badge, community, gallery, documentation, release instructions, installers and session-sharing services belong to upstream Pi, not Tau. Do not use Pi's installer as a Tau installer.
+
+## TAU-NATIVE
 
 Tau is a source-first fork of [earendil-works/pi](https://github.com/earendil-works/pi), maintained at [xotatera/tau](https://github.com/xotatera/tau). It retains the upstream MIT license, attribution, extension API names and core package names. The executable is `tau`; state defaults to `~/.tau/agent` and project resources to `.tau/`.
 
@@ -15,9 +21,11 @@ Isolation requires Linux, `/usr/bin/node` and `/usr/bin/bwrap`. Networking is **
 
 See [compatibility, import and isolation](docs/tau/compatibility.md), [verification evidence](docs/tau/foundation-verification.md), and [coding-agent setup](packages/coding-agent/README.md). This is a foundation, not completion of the diagnostics, context-provenance, shared work-lifecycle, reproducible-profile or per-extension capability roadmap.
 
-## Retained upstream resources
+---
 
-The Pi logo, npm badge, community, gallery, API documentation, release instructions and session-sharing services below belong to upstream Pi, not Tau. They are retained for attribution and reference; do not use Pi's installer as a Tau installer.
+## PI-NATIVE
+
+The original Pi README follows, retained for attribution and reference.
 
 <p align="center">
   <a href="https://pi.dev">

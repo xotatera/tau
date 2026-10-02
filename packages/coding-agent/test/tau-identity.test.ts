@@ -52,7 +52,7 @@ describe("Tau host identity and state", () => {
 	test("uses Tau paths without selecting Pi state", () => {
 		const { root, value } = probe();
 		expect(value.app).toBe("tau");
-		expect(value.title).toBe("tau");
+		expect(value.title).toBe("τ");
 		expect(value.package).toBe("@xotatera/tau-coding-agent");
 		expect(value.auth).toBe(join(root, ".tau", "agent", "auth.json"));
 		expect(value.settings).toBe(join(root, ".tau", "agent", "settings.json"));

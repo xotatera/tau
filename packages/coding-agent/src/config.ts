@@ -555,7 +555,7 @@ try {
 const piConfigName: string | undefined = pkg.piConfig?.name;
 export const PACKAGE_NAME: string = pkg.name || "@xotatera/tau-coding-agent";
 export const APP_NAME: string = piConfigName || "tau";
-export const APP_TITLE: string = APP_NAME;
+export const APP_TITLE: string = "τ";
 export const CONFIG_DIR_NAME: string = pkg.piConfig?.configDir || ".tau";
 export const VERSION: string = pkg.version || "0.0.0";
 

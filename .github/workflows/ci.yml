@@ -60,7 +60,11 @@ jobs:
         run: npm run check
 
       - name: Test
-        run: npm test
+        run: |
+          npm_cli="$(command -v npm)"
+          PATH="/usr/bin:$PATH"
+          test "$(node -p 'process.execPath')" = /usr/bin/node
+          "$npm_cli" test
 
       - name: Restore runner user namespace restriction
         if: always()

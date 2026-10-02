@@ -43,10 +43,12 @@ jobs:
           cmp "$(command -v node)" /usr/bin/node
           /usr/bin/node --version
 
-      - name: Probe runner namespace support
+      # Ubuntu 24.04 AppArmor otherwise denies bubblewrap's unprivileged UID map on this ephemeral runner.
+      # This enables the real isolation tests; Tau still refuses to run without its sandbox boundary.
+      - name: Enable user namespaces for isolation tests
         run: |
-          sysctl kernel.unprivileged_userns_clone kernel.apparmor_restrict_unprivileged_userns || true
-          bwrap --unshare-user --unshare-pid --ro-bind / / --proc /proc --dev /dev -- /usr/bin/true
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 0
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
@@ -59,6 +61,10 @@ jobs:
 
       - name: Test
         run: npm test
+
+      - name: Restore runner user namespace restriction
+        if: always()
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=1
 
   mcp-conformance:
     runs-on: ubuntu-latest

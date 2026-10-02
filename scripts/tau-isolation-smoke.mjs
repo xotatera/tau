@@ -29,7 +29,7 @@ export default function(pi) { pi.on("session_start", (_event, ctx) => { writeFil
 			const entry = fileURLToPath(new URL(`../packages/coding-agent/${artifact}`, import.meta.url));
 			const resolver = new URL("../packages/coding-agent/src/experimental/source-resolver.ts", import.meta.url).href;
 			const args = [...(artifact.endsWith(".ts") ? ["--import", resolver] : []), entry, "--isolated", `--sandbox-network=${network}`, "--offline", "-p", "--no-session", "--no-builtin-tools", "--no-context-files", "--model", "probe/probe", "--api-key", "synthetic", "-e", probe];
-			const result = spawnSync(process.execPath, args, { cwd: project, env: { PATH: "/usr/bin:/bin", HOME: home, TAU_CODING_AGENT_DIR: agent }, encoding: "utf8", timeout: 15000, killSignal: "SIGKILL" });
+			const result = spawnSync("/usr/bin/node", args, { cwd: project, env: { PATH: "/usr/bin:/bin", HOME: home, TAU_CODING_AGENT_DIR: agent }, encoding: "utf8", timeout: 15000, killSignal: "SIGKILL" });
 			assert.equal(result.status, 0, result.stderr);
 			assert.deepEqual(JSON.parse(readFileSync(report, "utf8")), { tool: true, command: true, identity: true });
 		}

@@ -43,6 +43,11 @@ jobs:
           cmp "$(command -v node)" /usr/bin/node
           /usr/bin/node --version
 
+      - name: Probe runner namespace support
+        run: |
+          sysctl kernel.unprivileged_userns_clone kernel.apparmor_restrict_unprivileged_userns || true
+          bwrap --unshare-user --unshare-pid --ro-bind / / --proc /proc --dev /dev -- /usr/bin/true
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
 

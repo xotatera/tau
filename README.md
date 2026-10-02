@@ -1,3 +1,24 @@
+# Tau
+
+Tau is a source-first fork of [earendil-works/pi](https://github.com/earendil-works/pi), maintained at [xotatera/tau](https://github.com/xotatera/tau). It retains the upstream MIT license, attribution, extension API names and core package names. The executable is `tau`; state defaults to `~/.tau/agent` and project resources to `.tau/`.
+
+```bash
+npm install --ignore-scripts
+./tau-test.sh --help
+# From a separate project directory:
+/path/to/tau/tau-test.sh --isolated
+# Deny networking as well:
+/path/to/tau/tau-test.sh --isolated --sandbox-network=off
+```
+
+Isolation requires Linux, `/usr/bin/node` and `/usr/bin/bwrap`. Networking is **on by default**, not endpoint-filtered; exposed project/state data can be sent over the network. Extensions in ordinary trusted mode retain the launcher's permissions. Tau does not install or modify a global `pi` command, silently reuse Pi state, or self-update from upstream releases.
+
+See [compatibility, import and isolation](docs/tau/compatibility.md), [verification evidence](docs/tau/foundation-verification.md), and [coding-agent setup](packages/coding-agent/README.md). This is a foundation, not completion of the diagnostics, context-provenance, shared work-lifecycle, reproducible-profile or per-extension capability roadmap.
+
+## Retained upstream resources
+
+The Pi logo, npm badge, community, gallery, API documentation, release instructions and session-sharing services below belong to upstream Pi, not Tau. They are retained for attribution and reference; do not use Pi's installer as a Tau installer.
+
 <p align="center">
   <a href="https://pi.dev">
     <img alt="pi logo" src="https://pi.dev/logo-auto.svg" width="128">
@@ -107,7 +128,7 @@ npm run build         # Refresh model data, then build all packages
 npm run build:offline # Rebuild using existing model data without network access
 npm run check         # Lint, format, and type check
 ./test.sh            # Run tests (skips LLM-dependent tests without API keys)
-./pi-test.sh         # Run pi from sources (can be run from any directory)
+./tau-test.sh        # Run Tau from sources (can be run from any directory)
 ```
 
 ## Building standalone binaries from release source

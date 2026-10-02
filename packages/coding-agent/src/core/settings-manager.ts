@@ -7,13 +7,14 @@ import type {
 	WheelScrollLines,
 } from "@earendil-works/pi-tui";
 import { randomUUID } from "crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync } from "fs";
 import { dirname, join } from "path";
 import lockfile from "proper-lockfile";
 import { CONFIG_DIR_NAME, getAgentDir } from "../config.ts";
 import { normalizePath, resolvePath } from "../utils/paths.ts";
 import { stripBom } from "../utils/text.ts";
 import { DEFAULT_HTTP_IDLE_TIMEOUT_MS, parseHttpIdleTimeoutMs } from "./http-dispatcher.ts";
+import { atomicWrite } from "./pi-import/storage.ts";
 
 export interface CompactionModelOverride {
 	reserveTokens?: number;
@@ -308,7 +309,7 @@ export class FileSettingsStorage implements SettingsStorage {
 
 		for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 			try {
-				return lockfile.lockSync(path, { realpath: false });
+				return lockfile.lockSync(path, { realpath: false, stale: 120_000 });
 			} catch (error) {
 				const code =
 					typeof error === "object" && error !== null && "code" in error
@@ -336,10 +337,10 @@ export class FileSettingsStorage implements SettingsStorage {
 		try {
 			// Only create directory and lock if file exists or we need to write
 			const fileExists = existsSync(path);
-			if (fileExists) {
+			if (fileExists || existsSync(dir)) {
 				release = this.acquireLockSyncWithRetry(path);
 			}
-			const current = fileExists ? readFileSync(path, "utf-8") : undefined;
+			const current = existsSync(path) ? readFileSync(path, "utf-8") : undefined;
 			const next = fn(current);
 			if (next !== undefined) {
 				// Only create directory when we actually need to write
@@ -349,7 +350,9 @@ export class FileSettingsStorage implements SettingsStorage {
 				if (!release) {
 					release = this.acquireLockSyncWithRetry(path);
 				}
-				writeFileSync(path, next, "utf-8");
+				const latest = existsSync(path) ? readFileSync(path, "utf-8") : undefined;
+				if (latest !== current) throw new Error("Settings changed before persistence");
+				atomicWrite(path, next);
 			}
 		} finally {
 			if (release) {

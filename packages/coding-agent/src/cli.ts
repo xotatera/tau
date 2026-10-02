@@ -1,6 +1,11 @@
 #!/usr/bin/env node
-import { setupCli } from "./cli/setup.ts";
-import { main } from "./main.ts";
+import { launchTau } from "./core/isolation/launcher.ts";
 
-setupCli();
-main(process.argv.slice(2));
+launchTau(process.argv.slice(2))
+	.then((code) => {
+		process.exitCode = code;
+	})
+	.catch((error: unknown) => {
+		console.error(error instanceof Error ? error.message : "Tau launch failed");
+		process.exitCode = 1;
+	});

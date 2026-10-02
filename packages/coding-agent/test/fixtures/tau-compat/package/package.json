@@ -1,0 +1,7 @@
+{
+	"name": "legacy-compat-package",
+	"version": "1.0.0",
+	"type": "module",
+	"peerDependencies": { "@earendil-works/pi-coding-agent": "*" },
+	"pi": { "extensions": ["./index.ts"] }
+}

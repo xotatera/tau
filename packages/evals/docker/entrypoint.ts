@@ -28,7 +28,7 @@ function assertWorkspace(): void {
 	assertDirectoryEntries("/repo", ["node_modules", "package.json", "packages", "vitest.base.ts"]);
 	assertDirectoryEntries("/repo/packages", ["evals"]);
 	assertDirectoryEntries("/repo/packages/evals", ["docker", "evals", "package.json", "src", "vitest.evals.config.ts"]);
-	const codingAgentDir = "/repo/node_modules/@earendil-works/pi-coding-agent";
+	const codingAgentDir = "/repo/node_modules/@xotatera/tau-coding-agent";
 	for (const name of ["package.json", "dist/index.js"]) {
 		if (!existsSync(join(codingAgentDir, name))) throw new Error(`Installed coding-agent is missing ${name}.`);
 	}
@@ -99,9 +99,9 @@ for (const path of [
 	assertRootOnly(path);
 	assertSandboxCannotRead(path);
 }
-const codingAgentEntry = fileURLToPath(import.meta.resolve("@earendil-works/pi-coding-agent"));
-if (codingAgentEntry !== "/repo/node_modules/@earendil-works/pi-coding-agent/dist/index.js") {
-	throw new Error(`Eval does not resolve pi-coding-agent from dist: ${codingAgentEntry}`);
+const codingAgentEntry = fileURLToPath(import.meta.resolve("@xotatera/tau-coding-agent"));
+if (codingAgentEntry !== "/repo/node_modules/@xotatera/tau-coding-agent/dist/index.js") {
+	throw new Error(`Eval does not resolve tau-coding-agent from dist: ${codingAgentEntry}`);
 }
 
 const agentDir = "/tmp/pi-eval-host-agent";
@@ -113,6 +113,8 @@ chownTree("/artifacts", sandboxUid, sandboxGid);
 process.env.HOME = "/tmp/pi-eval-bootstrap";
 process.env.USERPROFILE = process.env.HOME;
 process.env.PI_CODING_AGENT_DIR = agentDir;
+process.env.TAU_CODING_AGENT_DIR = agentDir;
+process.env.TAU_CODING_AGENT_SESSION_DIR = join(agentDir, "sessions");
 process.env.PI_EVAL_CONTAINER = "1";
 process.umask(0o022);
 

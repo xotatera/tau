@@ -1,4 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type * as HostConfig from "../src/config.ts";
+
+// Exercise the preserved upstream transport with an explicitly Pi-identified host.
+// Tau's no-fetch policy is covered independently in tau-update-policy.test.ts.
+vi.mock("../src/config.ts", async (importOriginal) => ({
+	...(await importOriginal<typeof HostConfig>()),
+	PACKAGE_NAME: "@earendil-works/pi-coding-agent",
+}));
+
 import {
 	checkForNewPiVersion,
 	comparePackageVersions,

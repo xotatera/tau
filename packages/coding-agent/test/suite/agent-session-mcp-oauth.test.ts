@@ -157,7 +157,7 @@ describe("AgentSession MCP OAuth", () => {
 
 		const fallback = await setup("follow");
 		await fallback.harness.session.prompt("/mcp login issues");
-		expect(fallback.server.registrations.map((metadata) => metadata.client_name)).toEqual(["pi"]);
+		expect(fallback.server.registrations.map((metadata) => metadata.client_name)).toEqual(["tau"]);
 	});
 
 	it("adds the listening port to a callback URL without one", async () => {
@@ -172,13 +172,13 @@ describe("AgentSession MCP OAuth", () => {
 		expect(fixed.opened[0].searchParams.get("redirect_uri")).toBe(`http://127.0.0.1:${port}/oauth/done`);
 	});
 
-	it("uses credentials from pi mcp login on the next turn", async () => {
+	it("uses credentials from tau mcp login on the next turn", async () => {
 		const { harness, server, backend } = await setup("follow");
 		const agentDir = mkdtempSync(join(tmpdir(), "pi-mcp-login-"));
 		cleanups.push(() => rmSync(agentDir, { recursive: true, force: true }));
 		writeFileSync(join(agentDir, "mcp.json"), JSON.stringify({ mcpServers: { issues: { url: server.url } } }));
 
-		// The agent runs `pi mcp login issues` through bash; the user approves in the browser.
+		// The agent runs `tau mcp login issues` through bash; the user approves in the browser.
 		const output: string[] = [];
 		const exitCode = await runMcpCommand(["login", "issues"], {
 			cwd: agentDir,

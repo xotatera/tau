@@ -17,7 +17,7 @@ import {
 	ModelRuntime,
 	readStoredCredential,
 	SessionManager,
-} from "@earendil-works/pi-coding-agent";
+} from "@xotatera/tau-coding-agent";
 import {
 	attachHarnessRunToError,
 	createHarness,
@@ -80,7 +80,13 @@ export function resolveModelSelection(
 }
 
 export function applyIsolatedEnvironment(home: string, agentDir: string): () => void {
-	const overrides = { HOME: home, USERPROFILE: home, PI_CODING_AGENT_DIR: agentDir };
+	const overrides = {
+		HOME: home,
+		USERPROFILE: home,
+		TAU_CODING_AGENT_DIR: agentDir,
+		TAU_CODING_AGENT_SESSION_DIR: join(agentDir, "sessions"),
+		PI_CODING_AGENT_DIR: agentDir,
+	};
 	const previous = new Map<string, string | undefined>();
 	for (const name of Object.keys(process.env)) {
 		if (!name.startsWith("PI_EVAL_")) continue;
@@ -283,7 +289,7 @@ async function runPiCodingAgent<TOutput extends JsonValue>(
 	const root = await mkdtemp(join(tmpdir(), "pi-eval-"));
 	const workspace = join(root, "workspace");
 	const isolatedHome = join(root, "home");
-	const agentDir = join(isolatedHome, ".pi", "agent");
+	const agentDir = join(isolatedHome, ".tau", "agent");
 	const extensionFactories: InlineExtension[] = [];
 	let forcedSystemPrompt: string | undefined;
 	if (options.transformSystemPrompt) {

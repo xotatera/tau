@@ -281,7 +281,9 @@ ${chalk.bold("Commands:")}
   ${APP_NAME} install <source> [-l]     Install extension source and add to settings
   ${APP_NAME} remove <source> [-l]      Remove extension source from settings
   ${APP_NAME} uninstall <source> [-l]   Alias for remove
-  ${APP_NAME} update [source|self|pi]   Update pi, extensions, or model catalogs
+  ${APP_NAME} update [source|self|pi|tau] Update extensions or model catalogs (Tau self-updates unavailable)
+  ${APP_NAME} import pi [options]       Read-only Pi inventory; --apply requires --plan-hash
+  ${APP_NAME} import activate <id>      Explicitly activate a validated independent snapshot
   ${APP_NAME} list                      List installed extensions from settings
   ${APP_NAME} config [-l]               Open TUI to enable/disable package resources (Tab switches scope)
   ${APP_NAME} auth <command>            Print credentials or check provider readiness
@@ -329,6 +331,9 @@ ${chalk.bold("Options:")}
   --tui-mode <mode>              TUI mode: fullscreen (default) or regular
   --approve, -a                  Trust project-local files for this run
   --no-approve, -na              Ignore project-local files for this run
+  --isolated                     Run inside Linux bubblewrap (Node distribution only)
+  --sandbox-network=on|off        Isolation networking policy (default: on; not endpoint filtering)
+  --sandbox-env <NAME>            Forward one allowed existing provider/proxy variable (repeatable)
   --offline                      Disable startup network operations (same as PI_OFFLINE=1)
   --                             End option parsing; treat remaining arguments as messages/files
   --help, -h                     Show this help

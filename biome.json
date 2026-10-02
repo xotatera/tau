@@ -39,5 +39,22 @@
 			"!!**/node_modules"
 		]
 	},
+	"overrides": [
+		{
+			"includes": [
+				"packages/coding-agent/src/tau/**/*.ts",
+				"packages/coding-agent/src/**/tau-*.ts",
+				"packages/coding-agent/src/core/pi-import/**/*.ts",
+				"packages/coding-agent/src/core/isolation/**/*.ts",
+				"packages/coding-agent/src/bun/isolation-guard.ts",
+				"packages/coding-agent/src/cli/pi-import.ts",
+				"packages/coding-agent/test/pi-import-*.test.ts",
+				"packages/coding-agent/test/**/tau-*.test.ts",
+				"packages/coding-agent/test/fixtures/tau-compat/**/*.ts",
+				"scripts/tau-*.ts"
+			],
+			"linter": { "rules": { "suspicious": { "noExplicitAny": "error" } } }
+		}
+	],
 	"plugins": ["./scripts/biome/model-type-comparison.grit"]
 }

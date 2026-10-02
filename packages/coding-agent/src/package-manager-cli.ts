@@ -33,6 +33,7 @@ import { DefaultPackageManager } from "./core/package-manager.ts";
 import { type AppMode, resolveProjectTrusted } from "./core/project-trust.ts";
 import { DefaultResourceLoader, isBuiltinExtension } from "./core/resource-loader.ts";
 import { SettingsManager } from "./core/settings-manager.ts";
+import { isTauPackage, TAU_SELF_UPDATE_UNAVAILABLE } from "./core/tau-update-policy.ts";
 import { hasTrustRequiringProjectResources, ProjectTrustStore } from "./core/trust-manager.ts";
 import { spawnProcess, spawnProcessSync, waitForChildProcess } from "./utils/child-process.ts";
 import { canonicalizePath, getCwdRelativePath } from "./utils/paths.ts";
@@ -52,6 +53,7 @@ const MANAGED_INSTALL_MARKER = "managed-install.json";
 const MANAGED_RELEASE_VERSION_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
 function getActiveManagedInstallRoot(): string | undefined {
+	if (isTauPackage(PACKAGE_NAME)) return undefined;
 	const configuredRoot = process.env.PI_MANAGED_INSTALL_ROOT?.trim();
 	if (!configuredRoot) return undefined;
 
@@ -269,7 +271,7 @@ function getPackageCommandUsage(command: PackageCommand): string {
 		case "remove":
 			return `${APP_NAME} remove <source> [-l] [--approve|--no-approve]`;
 		case "update":
-			return `${APP_NAME} update [source|self|pi] [--self|--extensions|--models|--all] [--extension <source>] [--approve|--no-approve] [--force]`;
+			return `${APP_NAME} update [source|self|pi|tau] [--self|--extensions|--models|--all] [--extension <source>] [--approve|--no-approve] [--force]`;
 		case "list":
 			return `${APP_NAME} list [--approve|--no-approve]`;
 	}
@@ -337,24 +339,24 @@ Examples:
 			console.log(`${chalk.bold("Usage:")}
   ${getPackageCommandUsage("update")}
 
-Update pi, installed packages, or model catalogs.
-
+Update ${APP_NAME}, installed packages, or model catalogs.
+${isTauPackage(PACKAGE_NAME) ? `\n${TAU_SELF_UPDATE_UNAVAILABLE}\n` : ""}
 Options:
-  --self                  Update pi only (default when no target is given)
+  --self                  Request self-update only (default when no target is given)
   --extensions            Update installed packages only
   --models                Refresh model catalogs only
-  --all                   Update pi and installed packages
+  --all                   Update installed packages and request self-update
   --extension <source>    Update one package only
   -a, --approve           Trust project-local files for this command
   -na, --no-approve       Ignore project-local files for this command
-  --force                 Reinstall pi even if the current version is latest
+  --force                 Force a supported self-update (unavailable for Tau)
 
 Short forms:
-  ${APP_NAME} update                Update pi only
-  ${APP_NAME} update --all          Update pi and all extensions
+  ${APP_NAME} update                Request self-update only
+  ${APP_NAME} update --all          Update extensions; report unavailable Tau self-update
   ${APP_NAME} update --models       Refresh model catalogs only
   ${APP_NAME} update <source>       Update one package
-  ${APP_NAME} update pi             Update pi only (self works as alias to pi)
+  ${APP_NAME} update tau            Request self-update (self and pi remain aliases)
 `);
 			return;
 
@@ -531,7 +533,7 @@ function parsePackageCommand(args: string[]): PackageCommandOptions | undefined 
 			}
 			updateTarget = { type: "extensions", source: extensionFlagSource };
 		} else if (source) {
-			const sourceIsSelf = source === "self" || source === "pi";
+			const sourceIsSelf = source === "self" || source === "pi" || (isTauPackage(PACKAGE_NAME) && source === "tau");
 			if (sourceIsSelf) {
 				updateTarget = extensionsFlag ? { type: "all" } : { type: "self" };
 			} else {
@@ -915,6 +917,12 @@ export async function handlePackageCommand(
 		return true;
 	}
 
+	if (options.command === "update" && options.updateTarget?.type === "self" && isTauPackage(PACKAGE_NAME)) {
+		console.error(TAU_SELF_UPDATE_UNAVAILABLE);
+		process.exitCode = 1;
+		return true;
+	}
+
 	if (options.command === "update" && options.updateTarget?.type === "models") {
 		try {
 			await refreshModelCatalogs(getAgentDir());
@@ -1024,6 +1032,11 @@ export async function handlePackageCommand(
 					}
 				}
 				if (updateTargetIncludesSelf(target)) {
+					if (isTauPackage(PACKAGE_NAME)) {
+						console.error(TAU_SELF_UPDATE_UNAVAILABLE);
+						process.exitCode = 1;
+						return true;
+					}
 					const managedInstallRoot = getActiveManagedInstallRoot();
 					if (managedInstallRoot && options.force) {
 						console.error(

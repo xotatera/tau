@@ -1,6 +1,9 @@
-import { homedir } from "node:os";
-import { getDocsPath, getExamplesPath, getReadmePath } from "@earendil-works/pi-coding-agent";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
+import { join } from "node:path";
+import { getAgentDir, getDocsPath, getExamplesPath, getReadmePath, SessionManager } from "@xotatera/tau-coding-agent";
 import { describe, expect, it, vi } from "vitest";
+import { DefaultResourceLoader } from "../../coding-agent/src/core/resource-loader.ts";
 import { buildSystemPrompt } from "../../coding-agent/src/core/system-prompt.ts";
 import {
 	applyIsolatedEnvironment,
@@ -38,6 +41,40 @@ describe("resolveModelSelection", () => {
 });
 
 describe("isolateProcessEnvironment", () => {
+	it("overrides inherited Tau roots before discovery and restores them", async () => {
+		const root = mkdtempSync(join(tmpdir(), "tau-eval-env-"));
+		const host = join(root, "host"),
+			home = join(root, "home"),
+			agent = join(root, "agent"),
+			project = join(root, "project"),
+			marker = join(root, "executed");
+		for (const directory of [join(host, "extensions"), home, agent, project])
+			mkdirSync(directory, { recursive: true });
+		writeFileSync(
+			join(host, "extensions", "host.ts"),
+			`import { writeFileSync } from "node:fs"; writeFileSync(${JSON.stringify(marker)}, "unsafe"); export default function() {}`,
+		);
+		vi.stubEnv("TAU_CODING_AGENT_DIR", host);
+		vi.stubEnv("TAU_CODING_AGENT_SESSION_DIR", join(host, "sessions"));
+		const restore = applyIsolatedEnvironment(home, agent);
+		try {
+			expect(getAgentDir()).toBe(agent);
+			expect(SessionManager.create(project).getSessionDir()).not.toContain(host);
+			const loader = new DefaultResourceLoader({ cwd: project, agentDir: getAgentDir() });
+			await loader.reload();
+			expect(existsSync(marker)).toBe(false);
+			expect(loader.getExtensions().extensions).toHaveLength(0);
+		} finally {
+			restore();
+		}
+		try {
+			expect(getAgentDir()).toBe(host);
+			expect(process.env.TAU_CODING_AGENT_SESSION_DIR).toBe(join(host, "sessions"));
+		} finally {
+			vi.unstubAllEnvs();
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
 	it("removes runner metadata and restores the process environment", () => {
 		vi.stubEnv("PI_EVAL_VARIANT", "with_docs");
 		vi.stubEnv("PI_EVAL_ARTIFACT_DIR", "/tmp/artifacts");

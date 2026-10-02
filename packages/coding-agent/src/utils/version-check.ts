@@ -1,4 +1,6 @@
 import { compare, valid } from "semver";
+import { PACKAGE_NAME } from "../config.ts";
+import { isTauPackage } from "../core/tau-update-policy.ts";
 import { fetchWithRetry } from "./management-http.ts";
 import { getPiUserAgent } from "./pi-user-agent.ts";
 
@@ -52,7 +54,7 @@ export async function getLatestPiRelease(
 	currentVersion: string,
 	options: { timeoutMs?: number; retry?: boolean } = {},
 ): Promise<LatestPiRelease | undefined> {
-	if (process.env.PI_OFFLINE) return undefined;
+	if (isTauPackage(PACKAGE_NAME) || process.env.PI_OFFLINE) return undefined;
 
 	const response = await fetchWithRetry(
 		LATEST_VERSION_URL,

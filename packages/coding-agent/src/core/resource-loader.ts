@@ -26,6 +26,7 @@ import type {
 } from "./extensions/types.ts";
 import { findGitPaths } from "./footer-data-provider.ts";
 import { DefaultPackageManager, type PathMetadata, type ResolvedResource } from "./package-manager.ts";
+import { recoverPiImports } from "./pi-import/recovery.ts";
 import type { PromptTemplate } from "./prompt-templates.ts";
 import { loadPromptTemplates } from "./prompt-templates.ts";
 import { SettingsManager } from "./settings-manager.ts";
@@ -54,6 +55,7 @@ const HOST_PROVIDED_EXTENSION_PACKAGES = new Set([
 	"@earendil-works/pi-agent-core",
 	"@earendil-works/pi-ai",
 	"@earendil-works/pi-coding-agent",
+	"@xotatera/tau-coding-agent",
 	"@earendil-works/pi-tui",
 	"@mariozechner/pi-agent-core",
 	"@mariozechner/pi-ai",
@@ -503,6 +505,7 @@ export class DefaultResourceLoader implements ResourceLoader {
 	}
 
 	async reload(options?: ResourceLoaderReloadOptions): Promise<void> {
+		await recoverPiImports(this.agentDir);
 		resetTimings("extensions");
 
 		if (this.loaded) {

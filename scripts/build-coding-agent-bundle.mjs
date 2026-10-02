@@ -144,6 +144,7 @@ function outputBytes(metafiles) {
 
 for (const entry of [
 	join(codingAgentDistDir, "cli.js"),
+	join(codingAgentDistDir, "cli-runtime.js"),
 	join(codingAgentDistDir, "index.js"),
 	join(codingAgentDistDir, "rpc-entry.js"),
 	join(codingAgentDistDir, "utils", "image-resize-worker.js"),
@@ -163,7 +164,8 @@ const mainResult = await build({
 	...commonBuildOptions(),
 	entryNames: "[name]",
 	entryPoints: {
-		"cli-runtime": join(codingAgentDistDir, "cli.js"),
+		"cli-bootstrap": join(codingAgentDistDir, "cli.js"),
+		"cli-runtime": join(codingAgentDistDir, "cli-runtime.js"),
 		index: join(codingAgentDistDir, "index.js"),
 		"rpc-entry": join(codingAgentDistDir, "rpc-entry.js"),
 	},
@@ -229,7 +231,7 @@ const cliLauncher = `#!/usr/bin/env node
 import { createRequire, enableCompileCache } from "node:module";
 
 enableCompileCache();
-createRequire(import.meta.url)("./cli-runtime.js");
+createRequire(import.meta.url)("./cli-bootstrap.js");
 `;
 writeFileSync(join(bundleDir, "cli.js"), cliLauncher);
 chmodSync(join(bundleDir, "cli.js"), 0o755);

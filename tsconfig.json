@@ -31,7 +31,19 @@
 				"./packages/durable/src/*"
 			],
 			"@earendil-works/pi-agent-core": ["./packages/agent/src/index.ts"],
+			"@mariozechner/pi-agent-core": ["./packages/agent/src/index.ts"],
+			"@mariozechner/pi-ai": ["./packages/ai/src/compat.ts"],
+			"@mariozechner/pi-ai/compat": ["./packages/ai/src/compat.ts"],
+			"@mariozechner/pi-ai/oauth": ["./packages/ai/src/oauth.ts"],
+			"@mariozechner/pi-ai/providers/all": ["./packages/ai/src/providers/all.ts"],
+			"@mariozechner/pi-coding-agent": ["./packages/coding-agent/src/index.ts"],
+			"@mariozechner/pi-tui": ["./packages/tui/src/index.ts"],
+			"@sinclair/typebox": ["./node_modules/typebox/build/index.d.mts"],
+			"@sinclair/typebox/compile": ["./node_modules/typebox/build/compile/index.d.mts"],
+			"@sinclair/typebox/value": ["./node_modules/typebox/build/value/index.d.mts"],
 			"@earendil-works/pi-coding-agent": ["./packages/coding-agent/src/index.ts"],
+			"@xotatera/tau-coding-agent": ["./packages/coding-agent/src/index.ts"],
+			"@xotatera/tau-coding-agent/*": ["./packages/coding-agent/src/*"],
 			"@earendil-works/pi-coding-agent/experimental/plugin": [
 				"./packages/coding-agent/src/experimental/plugin.ts"
 			],
@@ -52,6 +64,6 @@
 			"@earendil-works/pi-agent-old/*": ["./packages/agent-old/src/*"]
 		}
 	},
-	"include": ["scripts/model-catalog-protocol.ts", "scripts/model-catalog-protocol.test.ts", "packages/*/src/**/*", "packages/*/test/**/*", "packages/coding-agent/examples/**/*", "packages/agent/examples/**/*"],
+	"include": ["scripts/tau-*.test.ts", "scripts/model-catalog-protocol.ts", "scripts/model-catalog-protocol.test.ts", "packages/*/src/**/*", "packages/*/test/**/*", "packages/coding-agent/examples/**/*", "packages/agent/examples/**/*"],
 	"exclude": ["**/dist/**", "packages/coding-agent/examples/extensions/gondolin/**"]
 }

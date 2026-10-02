@@ -3,6 +3,7 @@ import { createRequire } from "module";
 import { homedir } from "os";
 import { basename, dirname, join, resolve, sep, win32 } from "path";
 import { fileURLToPath } from "url";
+import { isTauPackage, TAU_SELF_UPDATE_UNAVAILABLE } from "./core/tau-update-policy.ts";
 import { spawnProcessSync } from "./utils/child-process.ts";
 import { normalizePath } from "./utils/paths.ts";
 import { stripBom } from "./utils/text.ts";
@@ -326,6 +327,7 @@ export function getSelfUpdateCommand(
 	npmCommand?: string[],
 	updatePackageTarget: SelfUpdatePackageTarget = packageName,
 ): SelfUpdateCommand | undefined {
+	if (isTauPackage(packageName)) return undefined;
 	const method = detectInstallMethod();
 	const command = getSelfUpdateCommandForMethod(method, packageName, updatePackageTarget, npmCommand);
 	if (!command || !isManagedByGlobalPackageManager(method, packageName, npmCommand) || !isSelfUpdatePathWritable()) {
@@ -339,6 +341,7 @@ export function getSelfUpdateUnavailableInstruction(
 	npmCommand?: string[],
 	updatePackageTarget: SelfUpdatePackageTarget = packageName,
 ): string {
+	if (isTauPackage(packageName)) return TAU_SELF_UPDATE_UNAVAILABLE;
 	const method = detectInstallMethod();
 	const target = normalizeSelfUpdatePackageTarget(updatePackageTarget);
 	if (method === "bun-binary") {
@@ -355,6 +358,7 @@ export function getSelfUpdateUnavailableInstruction(
 }
 
 export function getUpdateInstruction(packageName: string): string {
+	if (isTauPackage(packageName)) return TAU_SELF_UPDATE_UNAVAILABLE;
 	const method = detectInstallMethod();
 	const command = getSelfUpdateCommandForMethod(method, packageName);
 	if (command) {
@@ -402,6 +406,17 @@ export function getPackageDir(): string {
 		return dirname(process.execPath);
 	}
 	return findNodePackageDir(__dirname);
+}
+
+/** Resolve the executable installation, ignoring asset-only PI_PACKAGE_DIR overrides. */
+export function getCliInstallationDir(): string {
+	return findNodePackageDir(__dirname);
+}
+
+export function getCliRuntimePath(): string {
+	const installation = getCliInstallationDir();
+	if (isBundledNode) return join(installation, "dist", "bundle", "cli-runtime.js");
+	return join(installation, import.meta.url.endsWith(".ts") ? "src/cli-runtime.ts" : "dist/cli-runtime.js");
 }
 
 /**
@@ -529,17 +544,19 @@ interface PackageJson {
 
 let pkg: PackageJson = {};
 try {
-	pkg = JSON.parse(stripBom(readFileSync(getPackageJsonPath(), "utf-8"))) as PackageJson;
+	// Asset overrides must never select another application's identity or writable state.
+	const installationDir = isBunBinary ? dirname(process.execPath) : findNodePackageDir(__dirname);
+	pkg = JSON.parse(stripBom(readFileSync(join(installationDir, "package.json"), "utf-8"))) as PackageJson;
 } catch (e: unknown) {
 	const err = e as NodeJS.ErrnoException;
 	if (err.code !== "ENOENT") throw e;
 }
 
 const piConfigName: string | undefined = pkg.piConfig?.name;
-export const PACKAGE_NAME: string = pkg.name || "@earendil-works/pi-coding-agent";
-export const APP_NAME: string = piConfigName || "pi";
-export const APP_TITLE: string = piConfigName ? APP_NAME : "π";
-export const CONFIG_DIR_NAME: string = pkg.piConfig?.configDir || ".pi";
+export const PACKAGE_NAME: string = pkg.name || "@xotatera/tau-coding-agent";
+export const APP_NAME: string = piConfigName || "tau";
+export const APP_TITLE: string = APP_NAME;
+export const CONFIG_DIR_NAME: string = pkg.piConfig?.configDir || ".tau";
 export const VERSION: string = pkg.version || "0.0.0";
 
 // e.g., PI_CODING_AGENT_DIR or TAU_CODING_AGENT_DIR

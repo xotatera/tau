@@ -32,7 +32,7 @@ Compatibility is targeted at the recorded upstream baseline and supported public
 
 ### Included
 
-1. Create xotatera/tau with gh, clone into /home/xota/Projects/tau, and retain an upstream remote.
+1. Create xotatera/tau with gh, clone into /home/xota/Projects/ai/agents/tau, and retain an upstream remote.
 2. Introduce Tau-facing CLI and application identity while retaining MIT licensing and upstream attribution.
 3. Separate Tau state from Pi state.
 4. Preserve supported extension module aliases, factory signatures, package discovery, and event behavior.

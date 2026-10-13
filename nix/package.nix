@@ -17,7 +17,7 @@
 let
   nodejs = nodejs_22;
   packageJson = lib.importJSON (source + "/packages/coding-agent/package.json");
-  # Lockfile root used by the pi.dev installer. It pins the coding agent's
+  # Lockfile root for Tau distribution validation. It pins the coding agent's
   # runtime dependency tree and is kept in sync with package-lock.json by
   # `npm run check`.
   installLock = source + "/packages/coding-agent/install-lock";
@@ -30,7 +30,7 @@ let
   };
 
   workspacePackages = stdenv.mkDerivation {
-    pname = "pi-workspace-packages";
+    pname = "tau-workspace-packages";
     inherit (packageJson) version;
     src = source;
 
@@ -82,7 +82,7 @@ let
       "node_modules/@earendil-works/pi-agent-core" = workspacePackages + "/agent.tgz";
       "node_modules/@earendil-works/pi-ai" = workspacePackages + "/ai.tgz";
       "node_modules/@earendil-works/pi-codemode" = workspacePackages + "/codemode.tgz";
-      "node_modules/@earendil-works/pi-coding-agent" = workspacePackages + "/coding-agent.tgz";
+      "node_modules/@xotatera/tau-coding-agent" = workspacePackages + "/coding-agent.tgz";
       "node_modules/@earendil-works/pi-mcp" = workspacePackages + "/mcp.tgz";
       "node_modules/@earendil-works/pi-telemetry" = workspacePackages + "/telemetry.tgz";
       "node_modules/@earendil-works/pi-tui" = workspacePackages + "/tui.tgz";
@@ -90,7 +90,7 @@ let
   };
 in
 stdenv.mkDerivation {
-  pname = "pi";
+  pname = "tau";
   inherit (packageJson) version;
   src = installLock;
   inherit npmDeps;
@@ -115,11 +115,11 @@ stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    mkdir -p "$out/lib/pi" "$out/bin"
-    cp -R . "$out/lib/pi"
+    mkdir -p "$out/lib/tau" "$out/bin"
+    cp -R . "$out/lib/tau"
 
-    makeWrapper ${nodejs}/bin/node "$out/bin/pi" \
-      --add-flags "$out/lib/pi/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js" \
+    makeWrapper ${nodejs}/bin/node "$out/bin/tau" \
+      --add-flags "$out/lib/tau/node_modules/@xotatera/tau-coding-agent/dist/bundle/cli.js" \
       --prefix PATH : ${
         lib.makeBinPath (
           [
@@ -140,28 +140,28 @@ stdenv.mkDerivation {
   doInstallCheck = true;
   installCheckPhase = ''
     runHook preInstallCheck
-    test "$("$out/bin/pi" --version)" = "${packageJson.version}"
+    test "$("$out/bin/tau" --version)" = "${packageJson.version}"
     # Load host-platform TUI helpers directly so missing native dependencies
     # fail the build rather than silently disabling clipboard support.
     ${nodejs}/bin/node -e \
       "const fs = require('node:fs');
        const path = require('node:path');
-       const dir = '$out/lib/pi/node_modules/@earendil-works/pi-tui/native/' + process.platform + '/prebuilds/' + process.platform + '-' + process.arch;
+       const dir = '$out/lib/tau/node_modules/@earendil-works/pi-tui/native/' + process.platform + '/prebuilds/' + process.platform + '-' + process.arch;
        if (fs.existsSync(dir)) {
          for (const file of fs.readdirSync(dir)) {
            if (file.endsWith('.node')) require(path.join(dir, file));
          }
        }"
     ${nodejs}/bin/node -e \
-      "require('$out/lib/pi/node_modules/@silvia-odwyer/photon-node')"
+      "require('$out/lib/tau/node_modules/@silvia-odwyer/photon-node')"
     runHook postInstallCheck
   '';
 
   meta = {
     description = packageJson.description;
-    homepage = "https://pi.dev";
+    homepage = "https://github.com/xotatera/tau";
     license = lib.licenses.mit;
-    mainProgram = "pi";
+    mainProgram = "tau";
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"

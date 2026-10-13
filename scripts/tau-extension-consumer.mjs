@@ -5,10 +5,11 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { installCodingAgentConsumer, packReleasePackages, smokeTestCodingAgentConsumer } from "./coding-agent-consumer.mjs";
-import { getPublicWorkspacePackages } from "./release-packages.mjs";
+import { codingAgentName, smokeTestCodingAgent } from "./coding-agent-smoke.mjs";
+import { installConsumer } from "./local-package-install.mjs";
+import { produceArtifactSet } from "./package-artifacts.mjs";
 
-const hostName = "@xotatera/tau-coding-agent";
+const hostName = codingAgentName;
 const fixtures = fileURLToPath(new URL("../packages/coding-agent/test/fixtures/tau-compat/", import.meta.url));
 
 function run(args, cwd, env) {
@@ -129,10 +130,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 	if (process.argv.length !== 2) throw new Error("Usage: node scripts/tau-extension-consumer.mjs");
 	const root = mkdtempSync(join(tmpdir(), "tau-extension-consumer-"));
 	try {
-		const tarballs = packReleasePackages(getPublicWorkspacePackages(), join(root, "tarballs"));
+		const artifactSet = produceArtifactSet({ build: false, outDir: join(root, "artifacts"), repoRoot: fileURLToPath(new URL("../", import.meta.url)) });
 		const directory = join(root, "consumer");
-		installCodingAgentConsumer(directory, tarballs);
-		smokeTestCodingAgentConsumer(directory);
+		installConsumer({ artifactSet, directory, packageNames: [codingAgentName] });
+		smokeTestCodingAgent(directory);
 		smokeTestTauExtensions(directory);
 	} finally { rmSync(root, { recursive: true, force: true }); }
 }
